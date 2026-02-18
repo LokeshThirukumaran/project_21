@@ -11,12 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const music = document.getElementById("music");
   const heartbeat = document.getElementById("heartbeat");
 
-  [opening, slideshow, letterSection, loveBomb].forEach(el => {
-    el.style.opacity = 0;
-    el.style.visibility = "hidden";
-  });
-
-  /* OPENING */
+  /* -------- OPENING -------- */
 
   const openingMessage =
 `This isn’t just Valentine’s.
@@ -24,25 +19,30 @@ This isn’t just an anniversary.
 This is a never ending love story
 that will live on forever.`;
 
-  let o = 0;
   opening.style.visibility = "visible";
   opening.style.opacity = 1;
 
-  heartbeat.volume = 0.35;
+  heartbeat.volume = 0.3;
   heartbeat.play().catch(()=>{});
 
+  let o = 0;
   const openType = setInterval(() => {
     openingText.textContent += openingMessage[o++];
     if (o >= openingMessage.length) {
       clearInterval(openType);
-      setTimeout(startSlideshow, 1800);
+      setTimeout(startSlideshow, 2000);
     }
   }, 70);
 
-  /* SLIDESHOW */
+  /* -------- SLIDESHOW -------- */
 
   const images = [];
   for (let i = 1; i <= 40; i++) images.push(`images/pic${i}.jpeg`);
+
+  images.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
 
   let imgIndex = 0;
 
@@ -55,27 +55,64 @@ that will live on forever.`;
       slideshow.style.visibility = "visible";
       slideshow.style.opacity = 1;
 
-      music.volume = 0.9;
-      music.play().catch(()=>{});
+      music.volume = 0;
+      music.play().then(() => {
+        fadeMusicIn();
+      }).catch(()=>{});
 
-      slideImg.src = images[0];
+      showImage(0);
 
       const interval = setInterval(() => {
         imgIndex++;
         if (imgIndex < images.length) {
-          slideImg.classList.remove("fade-in");
-          void slideImg.offsetWidth;
-          slideImg.src = images[imgIndex];
-          slideImg.classList.add("fade-in");
+          showImage(imgIndex);
         } else {
           clearInterval(interval);
-          setTimeout(startLoveLetter, 2200);
+          setTimeout(startLoveLetter, 2500);
         }
-      }, 4200); // ⬅ slower, romantic pacing
-    }, 1400);
+      }, 5200);
+
+    }, 1500);
   }
 
-  /* LOVE LETTER */
+  function showImage(index) {
+  // fade OUT current image
+  slideImg.classList.remove("show");
+
+  // wait for fade-out to finish
+  setTimeout(() => {
+
+    // force full reset
+    slideImg.src = images[index];
+    slideImg.style.transition = "none";
+
+    // HARD reflow (this is the magic)
+    void slideImg.offsetHeight;
+
+    // restore transition
+    slideImg.style.transition = "";
+
+    // fade IN new image
+    slideImg.classList.add("show");
+
+  }, 900); // must match fade-out feel
+}
+
+
+
+  function fadeMusicIn() {
+    let vol = 0;
+    const fade = setInterval(() => {
+      if (vol < 0.9) {
+        vol += 0.05;
+        music.volume = vol;
+      } else {
+        clearInterval(fade);
+      }
+    }, 200);
+  }
+
+  /* -------- LOVE LETTER -------- */
 
   function startLoveLetter() {
     slideshow.style.opacity = 0;
@@ -85,8 +122,7 @@ that will live on forever.`;
       letterSection.style.visibility = "visible";
       letterSection.style.opacity = 1;
 
-      const loveText =
-`From: Putttttaaaaa
+      const loveText = `From: Putttttaaaaa
 
 To: The girl who became my favorite place,
 my Valentine, my love,
@@ -123,14 +159,12 @@ Ur Putttttaaaaa`;
         letterBox.textContent += loveText.charAt(i++);
         if (i >= loveText.length) {
           clearInterval(typing);
-          setTimeout(showLoveBomb, 2600);
+          setTimeout(showLoveBomb, 3000);
         }
       }, 50);
 
     }, 1500);
   }
-
-  /* LOVE BOMB */
 
   function showLoveBomb() {
     letterSection.style.opacity = 0;
